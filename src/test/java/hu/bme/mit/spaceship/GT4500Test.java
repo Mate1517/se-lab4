@@ -1,12 +1,11 @@
 package hu.bme.mit.spaceship;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 public class GT4500Test {
@@ -62,32 +61,6 @@ public class GT4500Test {
     }
 
     @Test
-    public void fireTorpedo_AllMode_BothStoresFired() {
-        when(mockPrimaryStore.fire(1)).thenReturn(true);
-        when(mockSecondaryStore.fire(1)).thenReturn(true);
-
-        boolean result = spaceship.fireTorpedo(FiringMode.ALL);
-
-        // Ellenőrizzük, hogy mindkét torpedó tár tüzelésre került-e
-        assertTrue(result);
-        verify(mockPrimaryStore, times(1)).fire(1);
-        verify(mockSecondaryStore, times(1)).fire(1);
-    }
-
-    @Test
-    public void fireTorpedo_AllMode_OneStoreEmpty() {
-        when(mockPrimaryStore.isEmpty()).thenReturn(true);
-        when(mockSecondaryStore.fire(1)).thenReturn(true);
-
-        boolean result = spaceship.fireTorpedo(FiringMode.ALL);
-
-        // Ellenőrizzük, hogy az egyik tár üres volt, mégis sikeres volt a tüzelés
-        assertTrue(result);
-        verify(mockPrimaryStore, times(0)).fire(1);
-        verify(mockSecondaryStore, times(1)).fire(1);
-    }
-
-    @Test
     public void fireTorpedo_SingleMode_PrimaryStoreFailure() {
         when(mockPrimaryStore.fire(1)).thenReturn(false);
 
@@ -98,5 +71,69 @@ public class GT4500Test {
         verify(mockPrimaryStore, times(1)).fire(1);
         verify(mockSecondaryStore, times(0)).fire(1);
     }
+
+    @Test
+public void fireTorpedo_SingleMode_PrimaryStoreEmpty() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(true);
+    when(mockSecondaryStore.isEmpty()).thenReturn(false);
+    when(mockSecondaryStore.fire(1)).thenReturn(true);
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.SINGLE);
+
+    // Assert
+    assertTrue(result);
+    verify(mockPrimaryStore, never()).fire(anyInt());
+    verify(mockSecondaryStore, times(1)).fire(1);
+}
+
+@Test
+public void fireTorpedo_SingleMode_BothStoresEmpty() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(true);
+    when(mockSecondaryStore.isEmpty()).thenReturn(true);
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.SINGLE);
+
+    // Assert
+    assertFalse(result);
+    verify(mockPrimaryStore, never()).fire(anyInt());
+    verify(mockSecondaryStore, never()).fire(anyInt());
+}
+
+@Test
+public void fireTorpedo_AllMode_BothStoresFired() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(false);
+    when(mockSecondaryStore.isEmpty()).thenReturn(false);
+    when(mockPrimaryStore.fire(1)).thenReturn(true);
+    when(mockSecondaryStore.fire(1)).thenReturn(true);
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.ALL);
+
+    // Assert
+    assertTrue(result);
+    verify(mockPrimaryStore, times(1)).fire(1);
+    verify(mockSecondaryStore, times(1)).fire(1);
+}
+
+@Test
+public void fireTorpedo_AllMode_OneStoreEmpty() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(true);
+    when(mockSecondaryStore.isEmpty()).thenReturn(false);
+    when(mockSecondaryStore.fire(1)).thenReturn(true);
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.ALL);
+
+    // Assert
+    assertTrue(result);
+    verify(mockPrimaryStore, never()).fire(anyInt());
+    verify(mockSecondaryStore, times(1)).fire(1);
+}
 
 }
