@@ -104,36 +104,69 @@ public void fireTorpedo_SingleMode_BothStoresEmpty() {
 }
 
 @Test
+public void fireTorpedo_SingleMode_PrimaryStoreFires() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(false); // primary store nem üres
+    when(mockPrimaryStore.fire(1)).thenReturn(true); // a tűz sikeres
+    when(mockSecondaryStore.isEmpty()).thenReturn(true); // secondary store üres
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.SINGLE);
+
+    // Assert
+    assertTrue(result);
+    verify(mockPrimaryStore, times(1)).fire(1); // Ellenőrizzük, hogy a primary store tűzelt
+    verify(mockSecondaryStore, never()).fire(anyInt()); // secondary store nem tüzelhetett
+}
+
+@Test
+public void fireTorpedo_SingleMode_SecondaryStoreFires() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(true); // primary store üres
+    when(mockSecondaryStore.isEmpty()).thenReturn(false); // secondary store nem üres
+    when(mockSecondaryStore.fire(1)).thenReturn(true); // a tűz sikeres
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.SINGLE);
+
+    // Assert
+    assertTrue(result);
+    verify(mockSecondaryStore, times(1)).fire(1); // Ellenőrizzük, hogy a secondary store tűzelt
+    verify(mockPrimaryStore, never()).fire(anyInt()); // primary store nem tüzelhetett
+}
+
+@Test
 public void fireTorpedo_AllMode_BothStoresFired() {
     // Arrange
-    when(mockPrimaryStore.isEmpty()).thenReturn(false);
-    when(mockSecondaryStore.isEmpty()).thenReturn(false);
-    when(mockPrimaryStore.fire(1)).thenReturn(true);
-    when(mockSecondaryStore.fire(1)).thenReturn(true);
+    when(mockPrimaryStore.isEmpty()).thenReturn(false); // primary store nem üres
+    when(mockSecondaryStore.isEmpty()).thenReturn(false); // secondary store sem üres
+    when(mockPrimaryStore.fire(1)).thenReturn(true); // primary store tűzelt
+    when(mockSecondaryStore.fire(1)).thenReturn(true); // secondary store tűzelt
 
     // Act
     boolean result = spaceship.fireTorpedo(FiringMode.ALL);
 
     // Assert
     assertTrue(result);
-    verify(mockPrimaryStore, times(1)).fire(1);
-    verify(mockSecondaryStore, times(1)).fire(1);
+    verify(mockPrimaryStore, times(1)).fire(1); // Ellenőrizzük, hogy a primary store tűzelt
+    verify(mockSecondaryStore, times(1)).fire(1); // Ellenőrizzük, hogy a secondary store is tűzelt
 }
 
 @Test
 public void fireTorpedo_AllMode_OneStoreEmpty() {
     // Arrange
-    when(mockPrimaryStore.isEmpty()).thenReturn(true);
-    when(mockSecondaryStore.isEmpty()).thenReturn(false);
-    when(mockSecondaryStore.fire(1)).thenReturn(true);
+    when(mockPrimaryStore.isEmpty()).thenReturn(true); // primary store üres
+    when(mockSecondaryStore.isEmpty()).thenReturn(false); // secondary store nem üres
+    when(mockSecondaryStore.fire(1)).thenReturn(true); // secondary store tűzelt
 
     // Act
     boolean result = spaceship.fireTorpedo(FiringMode.ALL);
 
     // Assert
     assertTrue(result);
-    verify(mockPrimaryStore, never()).fire(anyInt());
-    verify(mockSecondaryStore, times(1)).fire(1);
+    verify(mockPrimaryStore, never()).fire(anyInt()); // primary store nem tüzelhetett
+    verify(mockSecondaryStore, times(1)).fire(1); // secondary store tűzelt
 }
+
 
 }
