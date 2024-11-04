@@ -104,6 +104,22 @@ public void fireTorpedo_SingleMode_BothStoresEmpty() {
 }
 
 @Test
+public void fireTorpedo_AllMode_OneStoreEmpty() {
+    // Arrange
+    when(mockPrimaryStore.isEmpty()).thenReturn(true); // primary store üres
+    when(mockSecondaryStore.isEmpty()).thenReturn(false); // secondary store nem üres
+    when(mockSecondaryStore.fire(1)).thenReturn(true); // secondary store tűzelt
+
+    // Act
+    boolean result = spaceship.fireTorpedo(FiringMode.ALL);
+
+    // Assert
+    assertTrue(result);
+    verify(mockPrimaryStore, never()).fire(anyInt()); // primary store nem tüzelhetett
+    verify(mockSecondaryStore, times(1)).fire(1); // secondary store tűzelt
+}
+
+@Test
 public void fireTorpedo_SingleMode_PrimaryStoreFires() {
     // Arrange
     when(mockPrimaryStore.isEmpty()).thenReturn(false); // primary store nem üres
@@ -153,19 +169,20 @@ public void fireTorpedo_AllMode_BothStoresFired() {
 }
 
 @Test
-public void fireTorpedo_AllMode_OneStoreEmpty() {
+public void fireTorpedo_SingleMode_PrimaryStoreFiresAgain() {
     // Arrange
-    when(mockPrimaryStore.isEmpty()).thenReturn(true); // primary store üres
-    when(mockSecondaryStore.isEmpty()).thenReturn(false); // secondary store nem üres
-    when(mockSecondaryStore.fire(1)).thenReturn(true); // secondary store tűzelt
+    when(mockPrimaryStore.isEmpty()).thenReturn(false); // primary store nem üres
+    when(mockSecondaryStore.isEmpty()).thenReturn(true); // secondary store üres
+    when(mockPrimaryStore.fire(1)).thenReturn(true); // a tűz sikeres
 
     // Act
-    boolean result = spaceship.fireTorpedo(FiringMode.ALL);
+    boolean result = spaceship.fireTorpedo(FiringMode.SINGLE); // Első tűz
+    result = spaceship.fireTorpedo(FiringMode.SINGLE); // Második tűz
 
     // Assert
     assertTrue(result);
-    verify(mockPrimaryStore, never()).fire(anyInt()); // primary store nem tüzelhetett
-    verify(mockSecondaryStore, times(1)).fire(1); // secondary store tűzelt
+    verify(mockPrimaryStore, times(2)).fire(1); // Ellenőrizzük, hogy a primary store tűzelt
+    verify(mockSecondaryStore, never()).fire(anyInt()); // secondary store nem tüzelhetett
 }
 
 
